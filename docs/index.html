@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox Simulator Pacing Calculator</title>
+<meta name="description" content="Free calculator for Roblox simulator and tycoon economies: upgrade cost curves, time per level, rebirth requirements, multipliers and offline earnings. See where your progression stalls before players do.">
+<style>
+  :root {
+    --bg: #f7f8fa; --panel: #ffffff; --text: #111827; --muted: #5b6474; --line: #e3e6eb;
+    --accent: #0f766e; --warn-bg: #fff4e5; --warn-text: #8a4b00; --ok-bg: #e9f7f2; --ok-text: #0f5d4b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1420; --panel: #161d2b; --text: #e5e9f0; --muted: #9aa4b5; --line: #263046;
+      --accent: #5eead4; --warn-bg: #3a2a12; --warn-text: #f6c27a; --ok-bg: #12332c; --ok-text: #8fe3cc; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 28px 0 10px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  fieldset { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 14px; margin: 0; }
+  legend { font-weight: 600; padding: 0 4px; }
+  label { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 14px; color: var(--muted); }
+  input { width: 110px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; text-align: right; }
+  .note { border-radius: 10px; padding: 10px 14px; margin-top: 14px; }
+  .note.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .note.ok { background: var(--ok-bg); color: var(--ok-text); }
+  .tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: 6px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  td.slow { color: var(--warn-text); font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  button { padding: 7px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-x: auto; font-size: 13px; }
+  footer { margin-top: 36px; color: var(--muted); font-size: 13px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Roblox simulator pacing calculator</h1>
+  <p class="lead">Put in your upgrade and rebirth numbers and see how long each level and each rebirth takes, assuming a player spends everything on one upgrade. If each rebirth takes much longer than the last, the late game stalls. Everything runs in your browser.</p>
+
+  <div class="grid">
+    <fieldset><legend>Income</legend>
+      <label>Base income / s <input id="baseIncome" type="number" step="any" min="0"></label>
+    </fieldset>
+    <fieldset><legend>Upgrade</legend>
+      <label>Base cost <input id="baseCost" type="number" step="any" min="0"></label>
+      <label>Cost growth <input id="costGrowth" type="number" step="0.01" min="1"></label>
+      <label>Income per level <input id="incomePerLevel" type="number" step="any" min="0"></label>
+      <label>Levels <input id="levels" type="number" step="1" min="1" max="1000"></label>
+    </fieldset>
+    <fieldset><legend>Rebirth</legend>
+      <label>Base requirement <input id="baseRequirement" type="number" step="any" min="0"></label>
+      <label>Requirement growth <input id="requirementGrowth" type="number" step="0.05" min="1"></label>
+      <label>Multiplier per rebirth <input id="multiplierPerRebirth" type="number" step="0.05" min="0"></label>
+      <label>Rebirths <input id="count" type="number" step="1" min="1" max="100"></label>
+    </fieldset>
+    <fieldset><legend>Offline</legend>
+      <label>Max hours <input id="maxHours" type="number" step="1" min="0"></label>
+      <label>Efficiency (0-1) <input id="efficiency" type="number" step="0.05" min="0" max="1"></label>
+    </fieldset>
+  </div>
+
+  <div id="verdict" class="note"></div>
+  <div class="actions">
+    <button id="share" type="button">Copy link to these numbers</button>
+    <button id="json" type="button">Copy config JSON (for the Lune script)</button>
+    <button id="reset" type="button">Reset to example</button>
+  </div>
+
+  <h2>Rebirth pacing</h2>
+  <div class="tablewrap"><table id="rebirths"></table></div>
+
+  <h2>Upgrade pacing</h2>
+  <div class="tablewrap"><table id="upgrades"></table></div>
+  <p id="summary" class="lead" style="margin-top:10px"></p>
+
+  <h2>How the numbers work</h2>
+  <p class="lead">Price of the next level is <code>floor(baseCost × growth^owned)</code>. Rebirth k needs <code>baseRequirement × requirementGrowth^k</code> and multiplies income by <code>1 + k × multiplierPerRebirth</code>. With an additive multiplier, each rebirth takes about <code>growth × (1 + k·p) / (1 + (k+1)·p)</code> times as long as the previous one, so it creeps towards <code>requirementGrowth</code>. A ratio around 1.2–1.5 keeps progress steady; 2+ means players hit a wall. Derivations: <a href="https://github.com/2328312928-commits/roblox-luau-skill/blob/main/skills/roblox-simulator-economy/references/formulas.md">formulas.md</a>.</p>
+  <p class="lead">Same maths as the command-line version (<code>lune run scripts/balance.luau config.json</code>), which is also a Claude skill for designing simulator economies: <a href="https://github.com/2328312928-commits/roblox-luau-skill">roblox-luau-skill on GitHub</a>.</p>
+
+  <footer>
+    Free and open source (MIT). Related free Luau modules:
+    <a href="https://github.com/2328312928-commits/roblox-number-format">roblox-number-format</a> (1.5K / 3.4M display with correct rollover),
+    <a href="https://github.com/2328312928-commits/roblox-rate-limiter">roblox-rate-limiter</a>.
+    Built with the help of an AI coding assistant; the maths is tested against the Lune script.
+  </footer>
+</main>
+<script src="economy.js"></script>
+<script>
+  const EXAMPLE = { baseIncome: 1, upgrade: { baseCost: 10, costGrowth: 1.15, incomePerLevel: 1, levels: 40 },
+    rebirth: { baseRequirement: 1000000, requirementGrowth: 3, multiplierPerRebirth: 0.5, count: 8 },
+    offline: { maxHours: 8, efficiency: 0.5 } };
+  const FIELDS = { baseIncome: [], baseCost: ["upgrade"], costGrowth: ["upgrade"], incomePerLevel: ["upgrade"], levels: ["upgrade"],
+    baseRequirement: ["rebirth"], requirementGrowth: ["rebirth"], multiplierPerRebirth: ["rebirth"], count: ["rebirth"],
+    maxHours: ["offline"], efficiency: ["offline"] };
+  const LIMITS = { levels: [1, 1000], count: [1, 100], costGrowth: [1, 100], requirementGrowth: [1, 1000], efficiency: [0, 1] };
+  const fmt = (n) => (Number.isFinite(n) ? Math.round(n).toLocaleString("en-US") : "∞");
+
+  function get(cfg, key) { const p = FIELDS[key]; return p.length ? cfg[p[0]][key] : cfg[key]; }
+  function set(cfg, key, v) { const p = FIELDS[key]; if (p.length) cfg[p[0]][key] = v; else cfg[key] = v; }
+
+  function readInputs() {
+    const cfg = JSON.parse(JSON.stringify(EXAMPLE));
+    for (const key of Object.keys(FIELDS)) {
+      let v = Number(document.getElementById(key).value);
+      if (!Number.isFinite(v) || v < 0) v = get(EXAMPLE, key);
+      if (LIMITS[key]) v = Math.min(LIMITS[key][1], Math.max(LIMITS[key][0], v));
+      if (key === "levels" || key === "count") v = Math.floor(v);
+      set(cfg, key, v);
+    }
+    return cfg;
+  }
+  function writeInputs(cfg) { for (const key of Object.keys(FIELDS)) document.getElementById(key).value = get(cfg, key); }
+
+  function render() {
+    const cfg = readInputs();
+    const r = Economy.pacing(cfg);
+    const rb = document.getElementById("rebirths");
+    rb.innerHTML = "<tr><th>Rebirth</th><th>Requirement</th><th>Multiplier</th><th>Wait</th><th>vs previous</th></tr>" +
+      r.rebirths.map((b) => `<tr><td>${b.rebirth}</td><td>${fmt(b.requirement)}</td><td>x${Economy.fixed(b.multiplier, 1)}</td><td>${Economy.clock(b.wait)}</td>` +
+        `<td class="${b.ratio && b.ratio >= 2 ? "slow" : ""}">${b.ratio ? "x" + Economy.fixed(b.ratio, 2) : "–"}</td></tr>`).join("");
+    const up = document.getElementById("upgrades");
+    up.innerHTML = "<tr><th>Level</th><th>Price</th><th>Total spent</th><th>Income / s</th><th>Wait</th></tr>" +
+      r.upgrades.filter((u) => u.level <= 10 || u.level % 5 === 0 || u.level === r.upgrades.length)
+        .map((u) => `<tr><td>${u.level}</td><td>${fmt(u.price)}</td><td>${fmt(u.spent)}</td><td>${fmt(u.income)}</td><td>${Economy.clock(u.wait)}</td></tr>`).join("");
+    document.getElementById("summary").textContent =
+      `Reaching level ${cfg.upgrade.levels} takes ${Economy.clock(r.totalTime)}. Rebirth income starts at ${fmt(r.rebirthIncome)}/s before multipliers. ` +
+      `Offline (${cfg.offline.maxHours} h cap, ${Math.round(cfg.offline.efficiency * 100)}%) pays up to ${fmt(r.offlineMax)}.`;
+    const ratios = r.rebirths.map((b) => b.ratio).filter((x) => x);
+    const worst = ratios.length ? Math.max(...ratios) : 0;
+    const last = r.rebirths[r.rebirths.length - 1];
+    const v = document.getElementById("verdict");
+    if (worst >= 2) {
+      v.className = "note warn";
+      v.textContent = `Rebirths slow down fast: up to x${Economy.fixed(worst, 2)} longer each time, and rebirth ${last.rebirth} takes ${Economy.clock(last.wait)}. Try a lower requirement growth or a bigger multiplier per rebirth.`;
+    } else {
+      v.className = "note ok";
+      v.textContent = `Steady: each rebirth is at most x${Economy.fixed(worst, 2)} longer than the last; rebirth ${last.rebirth} takes ${Economy.clock(last.wait)}.`;
+    }
+    history.replaceState(null, "", "#" + encodeURIComponent(JSON.stringify(cfg)));
+  }
+
+  function load() {
+    let cfg = EXAMPLE;
+    try { if (location.hash.length > 1) cfg = { ...EXAMPLE, ...JSON.parse(decodeURIComponent(location.hash.slice(1))) }; } catch (e) { cfg = EXAMPLE; }
+    for (const k of ["upgrade", "rebirth", "offline"]) cfg[k] = { ...EXAMPLE[k], ...(cfg[k] || {}) };
+    writeInputs(cfg);
+    render();
+  }
+
+  async function copy(text, button) {
+    const old = button.textContent;
+    try { await navigator.clipboard.writeText(text); button.textContent = "Copied"; } catch (e) { button.textContent = "Copy failed"; }
+    setTimeout(() => (button.textContent = old), 1500);
+  }
+
+  document.querySelectorAll("input").forEach((i) => i.addEventListener("input", render));
+  document.getElementById("share").addEventListener("click", (e) => copy(location.href, e.currentTarget));
+  document.getElementById("json").addEventListener("click", (e) => copy(JSON.stringify(readInputs(), null, 2), e.currentTarget));
+  document.getElementById("reset").addEventListener("click", () => { writeInputs(EXAMPLE); render(); });
+  load();
+</script>
+</body>
+</html>

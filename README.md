@@ -25,7 +25,9 @@ Claude.ai: zip the `roblox-simulator-economy` folder and upload it under Setting
 
 ## Try the calculator
 
-Needs [Lune](https://github.com/lune-org/lune):
+**In your browser:** https://2328312928-commits.github.io/roblox-luau-skill/ (same maths, shareable links).
+
+**From the command line**, with [Lune](https://github.com/lune-org/lune):
 
 ```bash
 cd skills/roblox-simulator-economy

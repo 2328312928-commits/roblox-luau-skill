@@ -16,7 +16,9 @@ Claude.ai：把 `roblox-simulator-economy` 文件夹压缩成 zip，在 Settings
 
 ## 试用计算器
 
-需要 [Lune](https://github.com/lune-org/lune)：在 `skills/roblox-simulator-economy` 目录下运行 `lune run scripts/balance.luau`（内置示例）、`lune run scripts/balance.luau my.json`（你自己的数值）、`lune run tests/run.luau`（公式的测试）。
+**在浏览器里：** https://2328312928-commits.github.io/roblox-luau-skill/（同样的数学，可以分享链接）。
+
+**在命令行里**，需要 [Lune](https://github.com/lune-org/lune)：在 `skills/roblox-simulator-economy` 目录下运行 `lune run scripts/balance.luau`（内置示例）、`lune run scripts/balance.luau my.json`（你自己的数值）、`lune run tests/run.luau`（公式的测试）。
 
 示例输出（默认配置）：第 1 次重生要 6 小时 46 分，第 8 次要 137 天，因为每次重生都比上一次慢 2.0 到 2.7 倍。把 `requirementGrowth` 改成 1.8，就变成每次慢 1.2 到 1.6 倍。
 
