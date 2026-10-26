@@ -87,6 +87,8 @@
   <p class="lead">Price of the next level is <code>floor(baseCost × growth^owned)</code>. Rebirth k needs <code>baseRequirement × requirementGrowth^k</code> and multiplies income by <code>1 + k × multiplierPerRebirth</code>. With an additive multiplier, each rebirth takes about <code>growth × (1 + k·p) / (1 + (k+1)·p)</code> times as long as the previous one, so it creeps towards <code>requirementGrowth</code>. A ratio around 1.2–1.5 keeps progress steady; 2+ means players hit a wall. Derivations: <a href="https://github.com/2328312928-commits/roblox-luau-skill/blob/main/skills/roblox-simulator-economy/references/formulas.md">formulas.md</a>.</p>
   <p class="lead">Same maths as the command-line version (<code>lune run scripts/balance.luau config.json</code>), which is also a Claude skill for designing simulator economies: <a href="https://github.com/2328312928-commits/roblox-luau-skill">roblox-luau-skill on GitHub</a>.</p>
 
+  <p class="lead">Selling eggs or crates? The <a href="odds/">egg odds calculator &amp; disclosure checker</a> turns loot-table weights into the percentages Roblox requires you to show, with rounding, the disclaimer, pity and luck boosts.</p>
+
   <footer>
     Free and open source (MIT). Related free Luau modules:
     <a href="https://github.com/2328312928-commits/roblox-number-format">roblox-number-format</a> (1.5K / 3.4M display with correct rollover),

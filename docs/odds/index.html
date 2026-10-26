@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox Egg Odds Calculator &amp; Disclosure Checker</title>
+<meta name="description" content="Free tool for Roblox paid random items (eggs, crates, spins): turn weights into percentages, round them the way Roblox's policy allows, check they sum to 100%, add the required disclaimer, and show the effect of pity and luck boosts.">
+<style>
+  :root { --bg:#f7f8fa; --panel:#fff; --text:#111827; --muted:#5b6474; --line:#e3e6eb; --accent:#0f766e;
+    --warn-bg:#fff4e5; --warn-text:#8a4b00; --ok-bg:#e9f7f2; --ok-text:#0f5d4b; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161d2b; --text:#e5e9f0; --muted:#9aa4b5; --line:#263046;
+    --accent:#5eead4; --warn-bg:#3a2a12; --warn-text:#f6c27a; --ok-bg:#12332c; --ok-text:#8fe3cc; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:1040px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:18px; margin:28px 0 10px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:72ch; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .row { display:grid; grid-template-columns:1fr 120px 36px; gap:8px; margin-top:6px; }
+  input, select { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; }
+  input[type=number] { text-align:right; }
+  button { padding:7px 12px; border-radius:7px; border:1px solid var(--line); background:var(--panel); color:var(--text); font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+  label.inline { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px; color:var(--muted); font-size:14px; }
+  label.inline input, label.inline select { width:150px; }
+  .note { border-radius:10px; padding:10px 14px; margin-top:12px; }
+  .note.warn { background:var(--warn-bg); color:var(--warn-text); } .note.ok { background:var(--ok-bg); color:var(--ok-text); }
+  .tablewrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+  th, td { padding:6px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:600; font-size:13px; } tr:last-child td { border-bottom:none; }
+  pre { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; overflow-x:auto; font-size:13px; white-space:pre-wrap; }
+  footer { margin-top:36px; color:var(--muted); font-size:13px; } a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Roblox egg odds calculator &amp; disclosure checker</h1>
+  <p class="lead">For eggs, crates, capsules and spins bought with Robux (or with currency that Robux can buy). Enter each outcome's weight from your loot table; get the percentages to show players, rounded the way Roblox's policy allows, plus the disclaimer and pity text when you need them. Runs entirely in your browser.</p>
+
+  <div class="panel">
+    <div class="row" style="color:var(--muted);font-size:13px"><span>Outcome</span><span style="text-align:right">Weight</span><span></span></div>
+    <div id="rows"></div>
+    <div class="actions">
+      <button id="add" type="button">Add outcome</button>
+      <button id="example" type="button">Load example egg</button>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <div class="panel">
+      <strong>Rounding</strong>
+      <label class="inline">Extra decimal places <input id="extra" type="number" min="0" max="6" step="1" value="0"></label>
+    </div>
+    <div class="panel">
+      <strong>Pity (optional)</strong>
+      <label class="inline">Guaranteed outcome <select id="pityName"><option value="">None</option></select></label>
+      <label class="inline">On or before roll <input id="pityAt" type="number" min="1" step="1" value="60"></label>
+    </div>
+    <div class="panel">
+      <strong>Luck boost (optional)</strong>
+      <label class="inline">Boosted outcome <select id="boostName"><option value="">None</option></select></label>
+      <label class="inline">Weight multiplier <input id="boostBy" type="number" min="1" step="0.5" value="2"></label>
+    </div>
+  </div>
+
+  <div id="verdict" class="note"></div>
+
+  <h2>Odds to display</h2>
+  <div class="tablewrap"><table id="table"></table></div>
+
+  <h2 id="boostTitle" hidden>Odds while the luck boost is active</h2>
+  <div id="boostWrap" class="tablewrap" hidden><table id="boostTable"></table></div>
+
+  <h2 id="pityTitle" hidden>Pity in numbers</h2>
+  <div id="pityWrap" class="tablewrap" hidden><table id="pityTable"></table></div>
+
+  <h2>Copy into your game</h2>
+  <pre id="text"></pre>
+  <div class="actions">
+    <button id="copyText" type="button">Copy disclosure text</button>
+    <button id="copyLuau" type="button">Copy Luau weight table</button>
+    <button id="copyLink" type="button">Copy link to this egg</button>
+  </div>
+
+  <h2>What Roblox requires</h2>
+  <p class="lead">From Roblox's <a href="https://create.roblox.com/docs/production/monetization/paid-random-items">paid random items guidelines</a>: show every possible outcome and its odds as a percentage before purchase; the percentages must sum to exactly 100%; long decimals may be rounded to four or more decimal places below the first non-zero digit, with the disclaimer "Probabilities are rounded; total of displayed individual probabilities may not equal 100%."; pity systems and luck boosts must be explained numerically, and boosted odds shown while active; if odds don't fit on screen, use a clearly labelled "Info" or "Details" button (a bare (i) icon is not enough). This page reads "four places below the first non-zero digit" as: 12.3456% → 12.346%, 0.0123% → 0.012300%. If in doubt, add extra decimal places. This tool is a helper, not legal advice; the policy page is the source of truth.</p>
+
+  <footer>
+    Free and open source (MIT), part of <a href="https://github.com/2328312928-commits/roblox-luau-skill">roblox-luau-skill</a>.
+    Also: <a href="../">simulator pacing calculator</a> ·
+    <a href="https://github.com/2328312928-commits/roblox-number-format">roblox-number-format</a>.
+    Need the server side? The paid <a href="https://kettlewick.gumroad.com/l/roblox-game-systems-kit">Game Systems Kit</a> includes a tested LootTable with weighted drops and pity (same weights as the table above).
+    Built with the help of an AI coding assistant; the maths has tests.
+  </footer>
+</main>
+<script src="odds.js"></script>
+<script>
+  const EXAMPLE = [{ name: "Common Dog", weight: 600 }, { name: "Uncommon Cat", weight: 300 }, { name: "Rare Fox", weight: 90 }, { name: "Legendary Dragon", weight: 9.5 }, { name: "Secret Phoenix", weight: 0.5 }];
+  let outcomes = [];
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  function drawRows() {
+    $("rows").innerHTML = outcomes.map((o, i) =>
+      `<div class="row"><input data-i="${i}" data-k="name" value="${esc(o.name)}" aria-label="Outcome name"><input data-i="${i}" data-k="weight" type="number" min="0" step="any" value="${o.weight}" aria-label="Weight"><button data-del="${i}" type="button" aria-label="Remove">×</button></div>`).join("");
+    for (const sel of ["pityName", "boostName"]) {
+      const keep = $(sel).value;
+      $(sel).innerHTML = '<option value="">None</option>' + outcomes.map((o) => `<option${o.name === keep ? " selected" : ""}>${esc(o.name)}</option>`).join("");
+    }
+  }
+
+  function table(result) {
+    return "<tr><th>Outcome</th><th>Weight</th><th>Exact %</th><th>Display</th></tr>" +
+      result.rows.map((r) => `<tr><td>${esc(r.name)}</td><td>${r.weight}</td><td>${r.percent.toPrecision(8)}</td><td>${r.shown}%${r.rounded ? " (rounded)" : ""}</td></tr>`).join("") +
+      `<tr><td><strong>Total shown</strong></td><td></td><td></td><td><strong>${result.displayedSum}%</strong></td></tr>`;
+  }
+
+  function render() {
+    const extra = Math.max(0, Math.min(6, Math.floor(Number($("extra").value) || 0)));
+    const result = Odds.disclose(outcomes, extra);
+    $("table").innerHTML = table(result);
+    const v = $("verdict");
+    if (result.rows.length < 2) { v.className = "note warn"; v.textContent = "Add at least two outcomes with a weight above 0."; }
+    else if (result.needsDisclaimer) { v.className = "note warn"; v.textContent = `Some odds are rounded (shown total ${result.displayedSum}%), so Roblox's disclaimer must be displayed with them. It's included in the text below.`; }
+    else { v.className = "note ok"; v.textContent = "Every percentage is exact and they total exactly 100%. No disclaimer needed."; }
+
+    const boostName = $("boostName").value; const by = Number($("boostBy").value);
+    const showBoost = boostName && by > 1;
+    $("boostTitle").hidden = $("boostWrap").hidden = !showBoost;
+    let boostedResult = null;
+    if (showBoost) { boostedResult = Odds.disclose(Odds.boosted(outcomes, [boostName], by), extra); $("boostTable").innerHTML = table(boostedResult); }
+
+    const pityName = $("pityName").value; const at = Math.floor(Number($("pityAt").value));
+    const showPity = pityName && at >= 1;
+    $("pityTitle").hidden = $("pityWrap").hidden = !showPity;
+    let pity = null;
+    if (showPity) {
+      const row = result.rows.find((r) => r.name === pityName);
+      const p = row ? row.percent / 100 : 0;
+      pity = { name: pityName, at };
+      const checkpoints = [1, 10, Math.round(at / 2), at - 1, at].filter((n, i, a) => n >= 1 && a.indexOf(n) === i).sort((a, b) => a - b);
+      $("pityTable").innerHTML = "<tr><th>Rolls since last " + esc(pityName) + "</th><th>Chance of at least one, no pity</th><th>With pity</th></tr>" +
+        checkpoints.map((n) => `<tr><td>${n}</td><td>${(Odds.chanceWithin(p, n) * 100).toFixed(2)}%</td><td>${(Odds.chanceWithin(p, n, at) * 100).toFixed(2)}%</td></tr>`).join("") +
+        `<tr><td><strong>Average rolls per ${esc(pityName)}</strong></td><td>${p > 0 ? (1 / p).toFixed(1) : "never"}</td><td>${Odds.expectedRolls(p, at).toFixed(1)}</td></tr>`;
+    }
+
+    let text = Odds.disclosureText(result, pity);
+    if (boostedResult) text += `\n\nWith ${by}x luck on ${boostName}:\n` + Odds.disclosureText(boostedResult);
+    $("text").textContent = text;
+    try { history.replaceState(null, "", "#" + encodeURIComponent(JSON.stringify({ o: outcomes, e: extra }))); } catch (e) {}
+  }
+
+  async function copy(text, button) {
+    const old = button.textContent;
+    try { await navigator.clipboard.writeText(text); button.textContent = "Copied"; } catch (e) { button.textContent = "Copy failed"; }
+    setTimeout(() => (button.textContent = old), 1500);
+  }
+
+  $("rows").addEventListener("input", (e) => {
+    const i = Number(e.target.dataset.i); const k = e.target.dataset.k; if (!k) return;
+    outcomes[i][k] = k === "weight" ? Number(e.target.value) : e.target.value;
+    if (k === "name") { drawRows(); const el = document.querySelector(`[data-i="${i}"][data-k="name"]`); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    render();
+  });
+  $("rows").addEventListener("click", (e) => { if (e.target.dataset.del !== undefined) { outcomes.splice(Number(e.target.dataset.del), 1); drawRows(); render(); } });
+  $("add").addEventListener("click", () => { outcomes.push({ name: `Outcome ${outcomes.length + 1}`, weight: 1 }); drawRows(); render(); });
+  $("example").addEventListener("click", () => { outcomes = EXAMPLE.map((o) => ({ ...o })); drawRows(); render(); });
+  for (const id of ["extra", "pityName", "pityAt", "boostName", "boostBy"]) { $(id).addEventListener("input", render); $(id).addEventListener("change", render); }
+  $("copyText").addEventListener("click", (e) => copy($("text").textContent, e.currentTarget));
+  $("copyLuau").addEventListener("click", (e) => copy(Odds.luauTable(outcomes), e.currentTarget));
+  $("copyLink").addEventListener("click", (e) => copy(location.href, e.currentTarget));
+
+  try {
+    const saved = location.hash.length > 1 ? JSON.parse(decodeURIComponent(location.hash.slice(1))) : null;
+    if (saved && Array.isArray(saved.o)) { outcomes = saved.o.map((o) => ({ name: String(o.name), weight: Number(o.weight) })); $("extra").value = saved.e || 0; }
+  } catch (e) {}
+  if (!outcomes.length) outcomes = EXAMPLE.map((o) => ({ ...o }));
+  drawRows(); render();
+</script>
+</body>
+</html>

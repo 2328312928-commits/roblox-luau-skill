@@ -87,6 +87,10 @@ pity systems, updated live when they change. A bare "(i)" icon is not enough; la
 "Odds". Source: [Roblox paid random items guidelines](https://create.roblox.com/docs/production/monetization/paid-random-items).
 
 - Compute displayed odds from the same weight table the server rolls with, so they can't drift.
+- Rounding: long decimals may be rounded to four or more decimal places below the first non-zero
+  digit, but then the disclaimer "Probabilities are rounded; total of displayed individual
+  probabilities may not equal 100%." must be shown. A browser checker that does this from your
+  weights: https://2328312928-commits.github.io/roblox-luau-skill/odds/
 - Pity ("guaranteed within N") changes the odds; disclose it.
 
 ## Common mistakes
