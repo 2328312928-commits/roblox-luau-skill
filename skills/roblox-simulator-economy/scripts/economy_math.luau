@@ -32,11 +32,21 @@ function EconomyMath.cumulativeCostExact(base: number, growth: number, from: num
 	return total
 end
 
--- How many levels `money` buys starting from `owned` levels ("buy max").
-function EconomyMath.maxAffordable(base: number, growth: number, owned: number, money: number): number
+-- How many levels `money` buys starting from `owned` levels ("buy max"),
+-- never going past `maxLevel` (default 1,000,000). A free level or infinite
+-- money would otherwise loop forever, so the cap is always applied.
+function EconomyMath.maxAffordable(
+	base: number,
+	growth: number,
+	owned: number,
+	money: number,
+	maxLevel: number?
+): number
+	assert(type(money) == "number" and money == money, "maxAffordable: money must be a number")
+	local cap = maxLevel or 1000000
 	local count = 0
 	local spent = 0
-	while true do
+	while owned + count < cap do
 		local price = EconomyMath.levelCost(base, growth, owned + count)
 		if spent + price > money then
 			return count
@@ -44,6 +54,7 @@ function EconomyMath.maxAffordable(base: number, growth: number, owned: number, 
 		spent += price
 		count += 1
 	end
+	return count
 end
 
 -- Requirement for the next rebirth after `done` rebirths: base * growth ^ done.

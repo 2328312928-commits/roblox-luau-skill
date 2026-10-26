@@ -35,7 +35,7 @@ players quit), or the server trusts the client (exploiters set their own coins).
 |---|---|---|
 | Price of next level | `floor(baseCost * costGrowth ^ owned)` | `costGrowth` 1.07-1.15 for upgrades bought many times; 1.5-3 for rare big ones |
 | Cost from level a to b | `baseCost * g^a * (g^(b-a) - 1) / (g - 1)` | Players pay the floored per-level sum, which is slightly less |
-| Buy max | loop prices until the next one exceeds the money | The loop is safer than the log formula with floored prices |
+| Buy max | loop prices until the next one exceeds the money, capped at `maxLevel` | The loop is safer than the log formula with floored prices; the cap stops a free level or infinite money from looping forever |
 | Rebirth requirement k | `baseRequirement * requirementGrowth ^ k` | |
 | Rebirth multiplier | `1 + k * multiplierPerRebirth` | Additive multipliers grow slowly; multiplicative ones (`m ^ k`) explode |
 | Offline income | `min(away, maxHours * 3600) * rate * efficiency` | Away time ≤ 0 (clock went back) pays 0 |

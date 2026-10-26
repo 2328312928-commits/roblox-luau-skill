@@ -58,6 +58,13 @@ test("maxAffordable buys exactly as many levels as the money covers", function()
 	eq(EconomyMath.maxAffordable(10, 1.15, 0, 9), 0, "can't afford the first level")
 end)
 
+test("maxAffordable stops at maxLevel for free levels or infinite money", function()
+	eq(EconomyMath.maxAffordable(0, 1.15, 0, 100, 50), 50, "free levels stop at the cap")
+	eq(EconomyMath.maxAffordable(10, 1.15, 0, math.huge, 25), 25, "infinite money stops at the cap")
+	eq(EconomyMath.maxAffordable(10, 1.15, 30, 1e9, 30), 0, "already at the cap")
+	assert(not pcall(EconomyMath.maxAffordable, 10, 1.15, 0, 0 / 0), "NaN money is rejected")
+end)
+
 test("rebirth requirement and multiplier", function()
 	eq(EconomyMath.rebirthRequirement(1e6, 3, 0), 1e6, "first")
 	eq(EconomyMath.rebirthRequirement(1e6, 3, 2), 9e6, "third")
