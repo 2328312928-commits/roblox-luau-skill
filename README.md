@@ -31,6 +31,8 @@ Claude.ai: zip the `roblox-simulator-economy` folder and upload it under Setting
 
 **Number suffixes:** https://2328312928-commits.github.io/roblox-luau-skill/number-suffixes/ lists K … Vg with a converter both ways.
 
+**DataStore limits:** https://2328312928-commits.github.io/roblox-luau-skill/datastore-limits/ shows the current request budgets for your server size (60 + players × 40 per minute for reads and writes) and checks an autosave plan and save size against them.
+
 **From the command line**, with [Lune](https://github.com/lune-org/lune):
 
 ```bash

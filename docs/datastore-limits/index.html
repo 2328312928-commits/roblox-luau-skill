@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox DataStore Limits Calculator (2026 numbers)</title>
+<meta name="description" content="Roblox DataStore request budgets per server (60 + players × 40 per minute for standard reads and writes), per-key throughput, the 4,194,304-character value limit and the storage limit, with an autosave plan check and a save-size checker.">
+<style>
+  :root { --bg:#f7f8fa; --panel:#fff; --text:#111827; --muted:#5b6474; --line:#e3e6eb; --accent:#0f766e;
+    --warn-bg:#fff4e5; --warn-text:#8a4b00; --ok-bg:#e9f7f2; --ok-text:#0f5d4b; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161d2b; --text:#e5e9f0; --muted:#9aa4b5; --line:#263046;
+    --accent:#5eead4; --warn-bg:#3a2a12; --warn-text:#f6c27a; --ok-bg:#12332c; --ok-text:#8fe3cc; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:18px; margin:28px 0 10px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:72ch; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  label { display:flex; justify-content:space-between; align-items:center; gap:10px; color:var(--muted); font-size:14px; }
+  input { width:120px; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; text-align:right; }
+  textarea { width:100%; min-height:110px; padding:8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font:13px ui-monospace,Menlo,Consolas,monospace; }
+  .tablewrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+  th, td { padding:6px 12px; text-align:left; border-bottom:1px solid var(--line); }
+  td.num, th.num { text-align:right; white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:13px; } tr:last-child td { border-bottom:none; }
+  .bad { color:var(--warn-text); font-weight:600; } .good { color:var(--ok-text); font-weight:600; }
+  .note { border-radius:10px; padding:10px 14px; margin-top:12px; background:var(--warn-bg); color:var(--warn-text); }
+  pre { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; overflow-x:auto; font-size:13px; }
+  footer { margin-top:36px; color:var(--muted); font-size:13px; } a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Roblox DataStore limits calculator</h1>
+  <p class="lead">Request budgets for your server size, a check of your autosave plan against them, and a save-size checker. Numbers from Roblox's <a href="https://create.roblox.com/docs/cloud-services/data-stores/error-codes-and-limits">DataStore limits page</a>, <strong>checked <span id="checked"></span></strong>.</p>
+  <div class="note">Many older forum answers quote reads and writes as <code>60 + numPlayers × 10</code>. Roblox's current page says <code>60 + numPlayers × 40</code>. Budgets can also be changed per experience, so check the live value in-game with the snippet below.</div>
+
+  <h2>Your game</h2>
+  <div class="grid">
+    <div class="panel"><label>Players per server <input id="players" type="number" min="0" step="1" value="20"></label></div>
+    <div class="panel"><label>Autosave every (seconds, 0 = off) <input id="autosave" type="number" min="0" step="1" value="60"></label></div>
+    <div class="panel"><label>Keys written per save <input id="keys" type="number" min="1" step="1" value="1"></label></div>
+    <div class="panel"><label>Save size (bytes) <input id="size" type="number" min="0" step="1" value="5000"></label></div>
+    <div class="panel"><label>Lifetime users <input id="lifetime" type="number" min="0" step="1" value="10000"></label></div>
+  </div>
+
+  <h2>Check</h2>
+  <div class="tablewrap"><table id="checks"></table></div>
+
+  <h2>Request budgets per server, per minute</h2>
+  <div class="tablewrap"><table id="budgets"></table></div>
+
+  <h2>Save-size checker</h2>
+  <p class="lead">Paste a save as JSON (what <code>HttpService:JSONEncode</code> would produce) to see its size against the 4,194,304 limit. The page counts UTF-8 bytes, which is what Luau's <code>#</code> returns and never less than the character count, so it errs on the safe side.</p>
+  <textarea id="json">{"coins":125000,"gems":42,"inventory":[{"id":"Sword","count":1},{"id":"Wood","count":99}],"pity":{"Legendary":12}}</textarea>
+  <p id="jsonOut" class="lead" style="margin-top:8px"></p>
+
+  <h2>Other limits</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Limit</th><th class="num">Value</th></tr>
+    <tr><td>Value per key (after JSON serialization)</td><td class="num">4,194,304 characters</td></tr>
+    <tr><td>Data store name, key name, scope</td><td class="num">50 characters each</td></tr>
+    <tr><td>Metadata: key name / value / all pairs combined</td><td class="num">50 / 250 / 300 characters</td></tr>
+    <tr><td>Per-key writes, all servers (rolling minute)</td><td class="num">4 MB</td></tr>
+    <tr><td>Per-key reads, all servers (rolling minute)</td><td class="num">25 MB</td></tr>
+    <tr><td>Throughput rounding</td><td class="num">each request rounded up to the next KB</td></tr>
+    <tr><td>Total latest-version storage</td><td class="num">500 MB + 1 MB × lifetime users</td></tr>
+  </table></div>
+
+  <h2>Read the live budget in your game</h2>
+<pre>local DataStoreService = game:GetService("DataStoreService")
+for _, requestType in Enum.DataStoreRequestType:GetEnumItems() do
+	print(requestType.Name, DataStoreService:GetRequestBudgetForRequestType(requestType))
+end</pre>
+  <p class="lead">Run it from a server Script. The budget refills over time, so check it before bursts of requests (for example a save on shutdown), and queue saves instead of firing them all at once.</p>
+
+  <footer>
+    Free tools: <a href="../">simulator pacing calculator</a> · <a href="../odds/">egg odds checker</a> · <a href="../number-suffixes/">number suffixes</a> ·
+    <a href="https://github.com/2328312928-commits/roblox-luau-skill">roblox-luau-skill</a>.
+    Save data that survives bad or tampered input: the paid <a href="https://kettlewick.gumroad.com/l/roblox-game-systems-kit">Game Systems Kit</a> (DataStore-safe Inventory).
+    Built with the help of an AI coding assistant; the maths has tests. This page summarises Roblox's documentation; the official page is the source of truth.
+  </footer>
+</main>
+<script src="datastore.js"></script>
+<script>
+  const D = DataStoreLimits;
+  const $ = (id) => document.getElementById(id);
+  const num = (id) => Math.max(0, Number($(id).value) || 0);
+  const fmt = (n) => Math.round(n).toLocaleString("en-US");
+  const mb = (b) => (b / 1024 / 1024).toLocaleString("en-US", { maximumFractionDigits: 1 }) + " MB";
+  const pct = (share) => (Number.isFinite(share) ? (share * 100).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%" : "∞");
+  const verdict = (share) => `<span class="${share > 1 ? "bad" : "good"}">${pct(share)} of limit</span>`;
+  $("checked").textContent = D.CHECKED;
+
+  function render() {
+    const players = Math.floor(num("players"));
+    const p = D.plan({ players, autosaveSeconds: num("autosave"), keysPerSave: Math.max(1, Math.floor(num("keys"))), saveBytes: num("size"), lifetimeUsers: Math.floor(num("lifetime")) });
+    $("checks").innerHTML = `<tr><th>What</th><th class="num">Yours</th><th class="num">Limit</th><th class="num">Use</th></tr>
+      <tr><td>Autosave writes per minute (this server)</td><td class="num">${fmt(p.writesPerMinute)}</td><td class="num">${fmt(p.writeBudget)}</td><td class="num">${verdict(p.writeShare)}</td></tr>
+      <tr><td>Bytes written to one key per minute</td><td class="num">${fmt(p.perKeyBytesPerMinute)}</td><td class="num">${fmt(D.KEY_WRITE_BYTES_PER_MIN)}</td><td class="num">${verdict(p.perKeyShare)}</td></tr>
+      <tr><td>Save size vs value limit</td><td class="num">${fmt(num("size"))}</td><td class="num">${fmt(D.VALUE_LIMIT_CHARS)}</td><td class="num">${verdict(p.valueShare)}</td></tr>
+      <tr><td>Storage (uncompressed upper bound)</td><td class="num">${mb(p.storageNeed)}</td><td class="num">${mb(p.storageLimit)}</td><td class="num">${verdict(p.storageShare)}</td></tr>`;
+    $("budgets").innerHTML = `<tr><th>Request type</th><th class="num">Formula</th><th class="num">${players} players</th><th>Covers</th></tr>` +
+      D.REQUEST_LIMITS.map((l) => `<tr><td>${l.type}</td><td class="num">${l.base} + n × ${l.perPlayer}</td><td class="num">${fmt(D.budget(l, players))}</td><td>${l.covers}</td></tr>`).join("");
+    const text = $("json").value;
+    let parsed = true; try { JSON.parse(text); } catch (e) { parsed = false; }
+    const bytes = D.utf8Bytes(text);
+    $("jsonOut").innerHTML = `${fmt(bytes)} bytes (${pct(bytes / D.VALUE_LIMIT_CHARS)} of 4,194,304).` + (parsed ? "" : ` <span class="bad">Not valid JSON.</span>`);
+  }
+  for (const id of ["players", "autosave", "keys", "size", "lifetime", "json"]) $(id).addEventListener("input", render);
+  render();
+</script>
+</body>
+</html>
