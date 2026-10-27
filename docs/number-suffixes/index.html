@@ -52,7 +52,7 @@
   <div class="tablewrap"><table id="table"></table></div>
 
   <h2>The "1000K" bug</h2>
-  <p class="lead">Formatting 999,950 with one decimal as <code>999950 / 1000</code> → <code>999.95</code> → <code>"1000.0K"</code> is the most common display bug in simulators. Round first; if the rounded value reaches 1000, move up one suffix ("1.0M"). The converter above does this: try <code>999950</code> with 1 decimal.</p>
+  <p class="lead">Formatting 999,950 with one decimal as <code>999950 / 1000</code> → <code>999.95</code> → <code>"1000.0K"</code> is the most common display bug in simulators. Round first; if the rounded value reaches 1000, move up one suffix ("1.0M", or "1M" with trailing zeros dropped, as this converter and the Luau module do). Try <code>999950</code> with 1 decimal above.</p>
 
   <h2>Precision: where coin counts stop being exact</h2>
   <p class="lead">Luau numbers are doubles. Whole numbers are exact only up to 2<sup>53</sup> = 9,007,199,254,740,992 (about <strong>9 Qa</strong>). Above that, adding 1 coin may do nothing, and two different counts can display the same. Doubles reach about 1.8e308, so suffixes still display fine far past Vg (1e63), but if your economy's real values pass ~9 Qa, store a mantissa/exponent pair (or a log value) instead of a plain number. More on designing the curve itself: <a href="../">simulator pacing calculator</a>.</p>
