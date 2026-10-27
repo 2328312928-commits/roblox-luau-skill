@@ -29,6 +29,8 @@ Claude.ai: zip the `roblox-simulator-economy` folder and upload it under Setting
 
 **Egg / crate odds:** https://2328312928-commits.github.io/roblox-luau-skill/odds/ turns weights into the percentages Roblox's paid-random-items policy requires (rounding, disclaimer, pity, luck boosts).
 
+**Number suffixes:** https://2328312928-commits.github.io/roblox-luau-skill/number-suffixes/ lists K … Vg with a converter both ways.
+
 **From the command line**, with [Lune](https://github.com/lune-org/lune):
 
 ```bash

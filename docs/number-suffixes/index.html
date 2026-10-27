@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox Number Suffixes: K, M, B, T, Qa, Qi … Vg (Converter)</title>
+<meta name="description" content="Every number suffix Roblox simulators use (K, M, B, T, Qa, Qi, Sx, Sp, Oc, No, Dc … Vg) with its name and power of ten, plus a converter both ways and the rounding bug that shows 1000K instead of 1M.">
+<style>
+  :root { --bg:#f7f8fa; --panel:#fff; --text:#111827; --muted:#5b6474; --line:#e3e6eb; --accent:#0f766e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161d2b; --text:#e5e9f0; --muted:#9aa4b5; --line:#263046; --accent:#5eead4; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:18px; margin:28px 0 10px; }
+  p.lead { color:var(--muted); margin:0 0 16px; max-width:72ch; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  label { display:block; color:var(--muted); font-size:14px; margin-bottom:6px; }
+  input, select { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; }
+  .out { margin-top:10px; font-size:20px; font-weight:600; word-break:break-all; }
+  .sub { color:var(--muted); font-size:13px; word-break:break-all; }
+  .tablewrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+  th, td { padding:6px 12px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; font-size:13px; } tr:last-child td { border-bottom:none; }
+  code { font-size:13px; } pre { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px; overflow-x:auto; font-size:13px; }
+  footer { margin-top:36px; color:var(--muted); font-size:13px; } a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Roblox number suffixes: K, M, B, T, Qa, Qi … Vg</h1>
+  <p class="lead">The short-scale suffixes most Roblox simulators use, each one 1,000 times the last, with a converter in both directions. Conversion matches the free <a href="https://github.com/2328312928-commits/roblox-number-format">roblox-number-format</a> Luau module exactly (checked on 23,000+ inputs).</p>
+
+  <div class="grid2">
+    <div class="panel">
+      <label for="num">Number → short form</label>
+      <input id="num" value="1234567890">
+      <label for="dec" style="margin-top:8px">Decimals</label>
+      <select id="dec"><option>0</option><option>1</option><option selected>2</option><option>3</option></select>
+      <div id="numOut" class="out"></div>
+    </div>
+    <div class="panel">
+      <label for="short">Short form → number</label>
+      <input id="short" value="3.5Qa">
+      <div id="shortOut" class="out"></div>
+      <div id="shortSub" class="sub"></div>
+    </div>
+  </div>
+
+  <h2>All suffixes</h2>
+  <div class="tablewrap"><table id="table"></table></div>
+
+  <h2>The "1000K" bug</h2>
+  <p class="lead">Formatting 999,950 with one decimal as <code>999950 / 1000</code> → <code>999.95</code> → <code>"1000.0K"</code> is the most common display bug in simulators. Round first; if the rounded value reaches 1000, move up one suffix ("1.0M"). The converter above does this: try <code>999950</code> with 1 decimal.</p>
+
+  <h2>Precision: where coin counts stop being exact</h2>
+  <p class="lead">Luau numbers are doubles. Whole numbers are exact only up to 2<sup>53</sup> = 9,007,199,254,740,992 (about <strong>9 Qa</strong>). Above that, adding 1 coin may do nothing, and two different counts can display the same. Doubles reach about 1.8e308, so suffixes still display fine far past Vg (1e63), but if your economy's real values pass ~9 Qa, store a mantissa/exponent pair (or a log value) instead of a plain number. More on designing the curve itself: <a href="../">simulator pacing calculator</a>.</p>
+
+  <h2>Luau</h2>
+<pre>local NumberFormat = require(path.to.NumberFormat)  -- free, MIT: github.com/2328312928-commits/roblox-number-format
+NumberFormat.abbreviate(1234)         --> "1.23K"
+NumberFormat.abbreviate(999950, 1)    --> "1M"
+NumberFormat.abbreviate(2.5e12)       --> "2.5T"</pre>
+
+  <footer>
+    Free tools: <a href="../">simulator pacing calculator</a> · <a href="../odds/">egg odds calculator &amp; disclosure checker</a> ·
+    <a href="https://github.com/2328312928-commits/roblox-luau-skill">roblox-luau-skill</a> (Claude skill). Paid, tested Luau kits: <a href="https://kettlewick.gumroad.com">Kettlewick Tools</a>.
+    Built with the help of an AI coding assistant; the converter is tested against the Luau module.
+  </footer>
+</main>
+<script src="suffixes.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const full = (n) => (Math.abs(n) < 1e21 ? Math.round(n).toLocaleString("en-US") : n.toExponential(6).replace(/\.?0+e/, "e"));
+  $("table").innerHTML = "<tr><th>Suffix</th><th>Name</th><th>Power</th><th>1 of it is</th><th>Example</th></tr>" +
+    Suffixes.SUFFIXES.map(([s, name], i) => {
+      const p = 3 * (i + 1);
+      return `<tr><td><strong>${s}</strong></td><td>${name}</td><td>10<sup>${p}</sup></td><td>${p <= 18 ? Number("1e" + p).toLocaleString("en-US") : "1 followed by " + p + " zeros"}</td><td>${Suffixes.abbreviate(2.5 * Number("1e" + p))}</td></tr>`;
+    }).join("");
+  function render() {
+    const raw = String($("num").value).replace(/,/g, "").trim();
+    const n = Number(raw);
+    $("numOut").textContent = raw === "" ? "" : Number.isNaN(n) ? "Not a number" : Suffixes.abbreviate(n, Number($("dec").value));
+    const v = Suffixes.parse($("short").value);
+    $("shortOut").textContent = v === null ? "Not a known suffix" : full(v);
+    $("shortSub").textContent = v === null ? "Use one of the suffixes in the table, e.g. 1.5M, 2Qa, 7.25Sx" : (Math.abs(v) > 2 ** 53 ? "Above 2^53 (~9 Qa): not every whole number is exact here." : "");
+  }
+  for (const id of ["num", "dec", "short"]) { $(id).addEventListener("input", render); $(id).addEventListener("change", render); }
+  render();
+</script>
+</body>
+</html>
