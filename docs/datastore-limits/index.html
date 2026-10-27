@@ -90,7 +90,7 @@ end</pre>
   const num = (id) => Math.max(0, Number($(id).value) || 0);
   const fmt = (n) => Math.round(n).toLocaleString("en-US");
   const mb = (b) => (b / 1024 / 1024).toLocaleString("en-US", { maximumFractionDigits: 1 }) + " MB";
-  const pct = (share) => (Number.isFinite(share) ? (share * 100).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%" : "∞");
+  const pct = (share) => (share > 0 && share < 0.001 ? "<0.1%" : Number.isFinite(share) ? (share * 100).toLocaleString("en-US", { maximumFractionDigits: 1 }) + "%" : "∞");
   const verdict = (share) => `<span class="${share > 1 ? "bad" : "good"}">${pct(share)} of limit</span>`;
   $("checked").textContent = D.CHECKED;
 
