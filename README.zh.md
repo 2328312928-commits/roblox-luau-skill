@@ -24,6 +24,8 @@ Claude.ai：把 `roblox-simulator-economy` 文件夹压缩成 zip，在 Settings
 
 **DataStore 限额：** https://2328312928-commits.github.io/roblox-luau-skill/datastore-limits/ 按服务器人数显示当前的请求预算（读写每分钟 60 + 人数 × 40），并检查你的自动保存方案和存档大小是否超限。
 
+**Blender 模型限制：** https://2328312928-commits.github.io/roblox-luau-skill/blender-mesh-limits/ 列出 Roblox 的三角面预算、饰品尺寸（stud）、贴图限制和 FBX 导出设置。免费的 Blender 插件 [Mesh Check for Roblox](https://github.com/2328312928-commits/blender-mesh-check-roblox) 可以自动检查这些。
+
 **在命令行里**，需要 [Lune](https://github.com/lune-org/lune)：在 `skills/roblox-simulator-economy` 目录下运行 `lune run scripts/balance.luau`（内置示例）、`lune run scripts/balance.luau my.json`（你自己的数值）、`lune run tests/run.luau`（公式的测试）。
 
 示例输出（默认配置）：第 1 次重生要 6 小时 46 分，第 8 次要 137 天，因为每次重生都比上一次慢 2.0 到 2.7 倍。把 `requirementGrowth` 改成 1.8，就变成每次慢 1.2 到 1.6 倍。

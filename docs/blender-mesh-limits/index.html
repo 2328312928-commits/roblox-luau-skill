@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roblox Mesh Limits for Blender (2026): Triangles, Accessory Sizes, Textures</title>
+<meta name="description" content="Every Roblox mesh limit a Blender artist needs: 20,000 triangles per mesh, 4,000 for UGC accessories, accessory sizes in studs for Normal, Slender and Classic, texture sizes, 4 bone influences, cage names, units and FBX export settings.">
+<style>
+  :root { --bg:#f7f8fa; --panel:#fff; --text:#111827; --muted:#5b6474; --line:#e3e6eb; --accent:#0f766e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1420; --panel:#161d2b; --text:#e5e9f0; --muted:#9aa4b5; --line:#263046; --accent:#5eead4; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:19px; margin:30px 0 10px; } h3 { font-size:16px; margin:18px 0 8px; }
+  p, li { max-width:75ch; } .lead { color:var(--muted); }
+  .tablewrap { overflow-x:auto; background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+  th, td { padding:6px 12px; text-align:left; border-bottom:1px solid var(--line); }
+  .num { text-align:right; white-space:nowrap; } th { color:var(--muted); font-size:13px; } tr:last-child td { border-bottom:none; }
+  .cta { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin:16px 0; }
+  code { font-size:13px; } footer { margin-top:36px; color:var(--muted); font-size:13px; } a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Roblox mesh limits for Blender</h1>
+  <p class="lead">Every limit Roblox applies to meshes you make in Blender, in one place. Copied from Roblox's <a href="https://github.com/Roblox/creator-docs">creator documentation</a> and checked on <strong>2026-10-28</strong>; each section links to its source page.</p>
+  <div class="cta">Check all of this automatically: <a href="https://github.com/2328312928-commits/blender-mesh-check-roblox"><strong>Mesh Check for Roblox</strong></a>, a free Blender add-on (GPL). It counts triangles after modifiers, measures accessory sizes in studs and flags every rule below with a link to the Roblox page it comes from.</div>
+
+  <h2>Triangle and texture budgets</h2>
+  <div class="tablewrap"><table><tr><th>Asset</th><th class=num>Max triangles</th><th class=num>Max texture</th><th>Source</th></tr><tr><td>Mesh (MeshPart)</td><td class=num>20,000</td><td class=num>1024×1024</td><td><a href="https://create.roblox.com/docs/art/modeling/specifications">Roblox docs</a></td></tr><tr><td>Rigid accessory</td><td class=num>4,000</td><td class=num>2048×2048</td><td><a href="https://create.roblox.com/docs/avatar/rigid-accessories/specifications">Roblox docs</a></td></tr><tr><td>Layered accessory</td><td class=num>4,000</td><td class=num>2048×2048</td><td><a href="https://create.roblox.com/docs/avatar/layered-accessories/specifications">Roblox docs</a></td></tr></table></div>
+  <p>Triangles are counted after Roblox converts quads, so a quad counts as 2. Roblox supports texture uploads up to 4096×4096 but lists 1024×1024 as the maximum texture map size; Marketplace accessory textures can't exceed 2048×2048.</p>
+
+  <h2>Geometry rules</h2>
+  <ul>
+    <li><strong>Watertight</strong>: no exposed holes or backfaces.</li>
+    <li><strong>No n-gons</strong>: quads where possible.</li>
+    <li><strong>Volume</strong>: meshes can't have zero thickness.</li>
+    <li><strong>One material</strong> per mesh object, and a <strong>single UV set</strong> with all UVs inside 0–1 (overlaps are allowed).</li>
+  </ul>
+
+  <h2>Rigging</h2>
+  <ul>
+    <li>At most <strong>4 bones</strong> influence any vertex.</li>
+    <li>Bones frozen: scale 1, 1, 1 and rotation 0, 0, 0. The root bone at 0, 0, 0 with no influences.</li>
+    <li>Only one animation track per exported mesh.</li>
+  </ul>
+
+  <h2>Cages (layered accessories)</h2>
+  <p>Name the cages after the mesh: <code>Shirt_InnerCage</code> and <code>Shirt_OuterCage</code> for a mesh called <code>Shirt</code>. Don't delete cage vertices or change cage UVs.</p>
+
+  <h2>Rigid accessory sizes (studs)</h2>
+  <p>Maximum size per accessory type, measured from the attachment point. In Blender, X is width, Z is height and Y is depth. Some types aren't centered (hair, back, waist); the totals are shown here.</p>
+  <h3>Normal (Rthro) body scale</h3><div class=tablewrap><table><tr><th>Accessory</th><th class=num>Width (X)</th><th class=num>Height (Y)</th><th class=num>Depth (Z)</th></tr><tr><td>Hat</td><td class=num>1.87</td><td class=num>2.5</td><td class=num>1.87</td></tr><tr><td>Hair</td><td class=num>1.87</td><td class=num>3.12</td><td class=num>2.18</td></tr><tr><td>Face</td><td class=num>1.87</td><td class=num>1.25</td><td class=num>1.25</td></tr><tr><td>Eyebrow / eyelashes</td><td class=num>1.5</td><td class=num>0.5</td><td class=num>0.5</td></tr><tr><td>Neck</td><td class=num>2.95</td><td class=num>3.68</td><td class=num>2.16</td></tr><tr><td>Shoulder (NeckAttachment)</td><td class=num>6.9</td><td class=num>3.68</td><td class=num>3.24</td></tr><tr><td>Shoulder (collar attachments)</td><td class=num>2.95</td><td class=num>3.68</td><td class=num>3.24</td></tr><tr><td>Shoulder (shoulder attachments)</td><td class=num>2.67</td><td class=num>4.4</td><td class=num>3.09</td></tr><tr><td>Front</td><td class=num>2.95</td><td class=num>3.68</td><td class=num>3.24</td></tr><tr><td>Back</td><td class=num>9.86</td><td class=num>8.59</td><td class=num>4.87</td></tr><tr><td>Waist</td><td class=num>3.94</td><td class=num>4.29</td><td class=num>7.57</td></tr></table></div>
+  <h3>Slender (Rthro Narrow) body scale</h3><div class=tablewrap><table><tr><th>Accessory</th><th class=num>Width (X)</th><th class=num>Height (Y)</th><th class=num>Depth (Z)</th></tr><tr><td>Hat</td><td class=num>1.78</td><td class=num>2.5</td><td class=num>1.78</td></tr><tr><td>Hair</td><td class=num>1.78</td><td class=num>3.12</td><td class=num>2.08</td></tr><tr><td>Face</td><td class=num>1.78</td><td class=num>1.25</td><td class=num>1.18</td></tr><tr><td>Eyebrow / eyelashes</td><td class=num>1.5</td><td class=num>0.5</td><td class=num>0.5</td></tr><tr><td>Neck</td><td class=num>2.59</td><td class=num>3.39</td><td class=num>1.92</td></tr><tr><td>Shoulder (NeckAttachment)</td><td class=num>6.05</td><td class=num>3.39</td><td class=num>2.88</td></tr><tr><td>Shoulder (collar attachments)</td><td class=num>2.59</td><td class=num>3.39</td><td class=num>2.88</td></tr><tr><td>Shoulder (shoulder attachments)</td><td class=num>2.37</td><td class=num>3.96</td><td class=num>2.75</td></tr><tr><td>Front</td><td class=num>2.59</td><td class=num>3.39</td><td class=num>2.88</td></tr><tr><td>Back</td><td class=num>8.64</td><td class=num>7.91</td><td class=num>4.32</td></tr><tr><td>Waist</td><td class=num>3.76</td><td class=num>3.29</td><td class=num>6.73</td></tr></table></div>
+  <h3>Classic body scale</h3><div class=tablewrap><table><tr><th>Accessory</th><th class=num>Width (X)</th><th class=num>Height (Y)</th><th class=num>Depth (Z)</th></tr><tr><td>Hat</td><td class=num>3</td><td class=num>4</td><td class=num>3</td></tr><tr><td>Hair</td><td class=num>3</td><td class=num>5</td><td class=num>3.5</td></tr><tr><td>Face</td><td class=num>3</td><td class=num>2</td><td class=num>2</td></tr><tr><td>Eyebrow / eyelashes</td><td class=num>1.5</td><td class=num>0.5</td><td class=num>0.5</td></tr><tr><td>Neck</td><td class=num>3</td><td class=num>3</td><td class=num>2</td></tr><tr><td>Shoulder (NeckAttachment)</td><td class=num>7</td><td class=num>3</td><td class=num>3</td></tr><tr><td>Shoulder (collar attachments)</td><td class=num>3</td><td class=num>3</td><td class=num>3</td></tr><tr><td>Shoulder (shoulder attachments)</td><td class=num>3</td><td class=num>3</td><td class=num>3</td></tr><tr><td>Front</td><td class=num>3</td><td class=num>3</td><td class=num>3</td></tr><tr><td>Back</td><td class=num>10</td><td class=num>7</td><td class=num>4.5</td></tr><tr><td>Waist</td><td class=num>4</td><td class=num>3.5</td><td class=num>7</td></tr></table></div>
+
+  <h2>Units and FBX export settings</h2>
+  <ul>
+    <li><strong>Units</strong>: Scene Properties → Units → Unit System <strong>None</strong>, Rotation Degrees. Then 1 Blender unit = 1 stud when you import with Scale Unit set to Stud.</li>
+    <li><strong>FBX export</strong>: Path Mode <strong>Copy</strong> with <strong>Embed Textures</strong> on; Transform → Apply Scalings <strong>FBX Unit Scale</strong>; Armature → <strong>Add Leaf Bones off</strong>; <strong>Bake Animation off</strong> unless you export an animation.</li>
+  </ul>
+
+  <footer>
+    Free tools: <a href="../">simulator pacing calculator</a> · <a href="../datastore-limits/">DataStore limits</a> · <a href="../odds/">egg odds checker</a> · <a href="../number-suffixes/">number suffixes</a> ·
+    <a href="https://github.com/2328312928-commits/blender-mesh-check-roblox">Mesh Check for Roblox (Blender add-on)</a>. Paid, tested tools: <a href="https://kettlewick.gumroad.com">Kettlewick Tools</a>.
+    Not affiliated with Roblox Corporation; Roblox's own pages are the source of truth. Written with the help of an AI assistant from Roblox's documentation.
+  </footer>
+</main>
+</body>
+</html>

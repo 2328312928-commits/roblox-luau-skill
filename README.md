@@ -33,6 +33,8 @@ Claude.ai: zip the `roblox-simulator-economy` folder and upload it under Setting
 
 **DataStore limits:** https://2328312928-commits.github.io/roblox-luau-skill/datastore-limits/ shows the current request budgets for your server size (60 + players × 40 per minute for reads and writes) and checks an autosave plan and save size against them.
 
+**Blender mesh limits:** https://2328312928-commits.github.io/roblox-luau-skill/blender-mesh-limits/ lists Roblox's triangle budgets, accessory sizes in studs, texture limits and FBX export settings. The free Blender add-on [Mesh Check for Roblox](https://github.com/2328312928-commits/blender-mesh-check-roblox) checks them for you.
+
 **From the command line**, with [Lune](https://github.com/lune-org/lune):
 
 ```bash
